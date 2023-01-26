@@ -1,0 +1,221 @@
+<home>
+    <header>
+        <nav>
+            <div>
+                <div><input class="check-avec-label" type="checkbox" id="visibilite" onchange={ visibilityHandle } checked hidden/><label class="boutons" for="visibilite">&#x1F441</label></div>
+                <select onchange={ genreChange }>
+                    <option value=-1>Catégorie</option>
+                    <option each={ genre in Object.entries(this.state.genres) } key={ genre[0] } value={ genre[0] }>{ genre[1] }</option>
+                </select>
+                <div class="search">
+                    <input type="text"/>
+                    <button onclick={ (e) => dataUpdate(4) }><img src="img/loupe.svg"/></button>
+                </div>
+            </div>
+            <div id="top">
+                <div><input class="check-avec-label" type="radio" id="page1" name="page" onchange={ e => dataUpdate(0) } checked hidden/><label class="boutons" for="page1"> Populaires</label></div>
+                <div><input class="check-avec-label" type="radio" id="page2" name="page" onchange={ e => dataUpdate(1) } hidden/><label class="boutons" for="page2"> Mieux notés</label></div>
+                <div><input class="check-avec-label" type="radio" id="page3" name="page" onchange={ e => dataUpdate(2) } hidden/><label class="boutons" for="page3"> À venir</label></div>
+                <div><input class="check-avec-label" type="radio" id="page4" name="page" onchange={ e => dataUpdate(3) } hidden/><label class="boutons" for="page4"> À l'affiche</label></div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div id="sort">
+            <div class="flex" onclick={ () => this.sort("vote") }>Notes&nbsp;<img src="img/trier.svg"/></div>
+            <div class="flex"><img class="pageBtn" src="img/avant.svg" onclick={ () => pageChange(-1) }/> { state.page } / { state.maxPage } <img class="pageBtn" src="img/avant.svg" onclick={ () => pageChange(+1) } /></div>
+            <div class="flex" onclick={ () => this.sort("title") }>Titres&nbsp;<img src="img/trier.svg"/></div>
+        </div>
+        <section>
+            <affiche each={ movie in state.data } key={ movie.id } movie={ movie } hide={ !state.visibility } if={ state.genre_filter != -1 ? movie.genres.includes(state.genre_filter) : true }></affiche>
+        </section>
+    </main>
+
+    <style>
+        *{
+          font-family: Montserrat;
+        }
+        header{
+            padding: 10px 0px;
+        }
+        nav{
+            width: 70%;
+            margin: auto;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+        nav>div{
+            display: flex;
+            width: 100%;
+            height: 35px;
+            margin-top: 20px;
+            justify-content: space-between;
+        }
+        nav>div>*{
+            display: block;
+        }
+        affiche>a>h4, [is="affiche"]>a>h4{
+          color: #2b5b8f;
+          text-transform: uppercase;
+        }
+
+        select{
+            padding-left: 10px;
+            width: 150px;
+            font-weight: bold;
+        }
+        input[type="text"]{
+            padding: 5px 10px;
+            margin: 0;
+            height: 100%;
+            border-radius: 3px;
+            border: 1px solid black;
+        }
+        .boutons{
+          background-color: #f2f2f2;
+          color: black;
+          padding: 10px;
+          border-radius: 5px;
+        }
+        /*.boutons:hover{
+          background-color: #f2f2f2;
+          color: black;
+        }
+        .check-avec-label:checked:hover + .boutons{
+          background-color: #2b5b8f;
+          color: white;
+        }*/
+        .check-avec-label:checked + .boutons{
+          color: white;
+          background-color: #2b5b8f;
+        }
+
+        .search{
+            width: 300px;
+            display: flex;
+        }
+        .search>input{
+            flex-grow: 1;
+        }
+        .search>button{
+            margin-left: 2px;
+            flex-shrink: 0;
+        }
+        section{
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            padding-top: 20px;
+        }
+        #sort{
+            border-bottom: 1px solid black;
+            display: flex;
+            justify-content: space-between;
+        }
+        #sort>div:first-child:hover, #sort>div:last-child:hover, .pageBtn{
+            cursor: pointer;
+        }
+        #sort>div>.pageBtn:first-child{
+            transform: rotate(180deg);
+            margin-right: 10px;
+        }
+        #sort>div>.pageBtn:last-child{
+            margin-left: 10px;
+        }
+        #top{
+          margin-top: 42px;
+        }
+    </style>
+    <script>
+        const api = {
+            0: "https://api.themoviedb.org/3/movie/popular",
+            1: "https://api.themoviedb.org/3/movie/top_rated",
+            2: "https://api.themoviedb.org/3/movie/upcoming",
+            3: "https://api.themoviedb.org/3/movie/now_playing",
+            4: "https://api.themoviedb.org/3/search/movie",
+        }
+        export default {
+            state: {
+                top: 0,
+                genre_filter: -1,
+                genres: {},
+                visibility: true,
+                page: 1,
+                maxPage: 0,
+                data:  Array(),
+                sort: {
+                    attr: "",
+                    order: "DESC",
+                },
+            },
+            onBeforeMount(props, state){
+                modele.get("https://api.themoviedb.org/3/genre/movie/list", {language: "fr"}).then((rep) => {
+                    for( genre of rep.genres){
+                        state.genres[genre.id]=genre.name;
+                    }
+                    this.dataUpdate(state.top);
+                });
+            },
+            genreChange(e){
+              this.state.genre_filter = this.state.genres[e.target.value];
+              this.update();
+            },
+            dataUpdate(id){
+                let t = this;
+                let args = {
+                    page: (t.state.top != id ? 1 : t.state.page),
+                };
+                if(id==4){
+                    args.query = this.$(".search>input").value;
+                }
+                modele.get(api[id], args).then((rep) => {
+                    t.state.top = id;
+                    t.state.page = rep.page;
+                    t.state.maxPage = rep.total_pages;
+                    t.state.data = Array();
+                    for(movie of rep.results){
+                        t.state.data.push({
+                            genres: movie.genre_ids.map(e => this.state.genres[e]),
+                            id: movie.id,
+                            title: movie.original_title,
+                            img: movie.poster_path,
+                            popularity: movie.popularity,
+                            vote: movie.vote_average
+                        })
+                    }
+                    t.update()
+                }).catch((err) => {
+                    console.log("Erreur: " + err)
+                })
+            },
+            visibilityHandle(e){
+                this.state.visibility = e.target.checked;
+                this.update();
+            },
+            pageChange(page){
+                if(this.state.page+page <= 0 || this.state.page+page > this.state.maxPage ) return;
+                this.state.page += page;
+                this.update();
+                this.dataUpdate(this.state.top);
+            },
+            sort(attr){
+                if(this.state.sort.attr == attr){
+                    this.state.sort.order = this.state.sort.order == "ASC" ? "DESC" : "ASC";
+                }else{
+                    this.state.sort.attr = attr;
+                }
+                for(let i = 0; i < this.state.data.length; i++){
+                    for(let j = i;  j< this.state.data.length; j++){
+                        if( (this.state.sort.order == "ASC" && this.state.data[i][attr] > this.state.data[j][attr]) || (this.state.sort.order == "DESC" && this.state.data[i][attr] < this.state.data[j][attr]) ){
+                                const tmp = this.state.data[i];
+                                this.state.data[i] = this.state.data[j];
+                                this.state.data[j] = tmp;
+                        }
+                    }
+                }
+                this.update();
+            }
+        }
+    </script>
+</home>

@@ -1,0 +1,80 @@
+<film>
+    <spinner></spinner>
+    <main style="display: none">
+        <h1>{ state.data.title }</h1>
+        <div>
+            <img src={ state.data.poster_path != undefined ? "https://image.tmdb.org/t/p/w500/"+state.data.poster_path:"" }/>
+            <article>
+                <h2><span each={ genre in state.data.genres }>{ genre.name },&nbsp;</span></h2>
+                <p>{ state.data.release_date }</p>
+                <p>De&nbsp;<strong>{ state.credit.realisator != undefined ? state.credit.realisator.name : "" }</strong></p>
+                <p>Avec&nbsp;<span each={ a in state.credit.actors }>{ a.name },&nbsp;</span></p>
+                <div id="actors_img">
+                    <img each={ a in state.credit.actors } src={ a.profile_path != undefined ? "https://image.tmdb.org/t/p/w200" + a.profile_path : ""} width=75 />
+                </div>
+                <p>{ state.data.overview }</p>
+                <p><span>Note:  </span><note note={ state.data.vote_average } ></note>&nbsp;<span>{ state.data.vote_count } avis</span></p>
+                <a href="">Retour</a>
+            </article>
+        </div>
+    </main>
+
+    <style>
+        *{
+          font-family: Montserrat;
+        }
+        main{
+            max-width: 1200px;
+        }
+        h1,h2,h3,h4{
+            margin: 10px 0px;
+        }
+        main>div{
+            display: flex;
+        }
+        article{
+            flex-grow: 1;
+            overflow-wrap: break-word;
+            padding: 0px 30px;
+        }
+        p{
+            display: flex;
+        }
+        rate{
+            margin: 0px 10px;
+        }
+        #actors_img{
+            display: flex;
+            gap: 20px;
+        }
+    </style>
+    <script>
+        export default {
+            state: {
+                data: {},
+                credit: {
+                    actors: Array(),
+                    realisator: {},
+                },
+            },
+            onBeforeMount(props, state){
+                let t = this;
+                modele.get("https://api.themoviedb.org/3/movie/"+props.id, {language: "fr"}).then((rep) => {
+                    state.data = rep;
+                    modele.get("https://api.themoviedb.org/3/movie/"+props.id+"/credits",{language: "fr"}).then((rep) => {
+                        state.credit.actors = Array();
+                        for(let i = 0; i < 4; i++){
+                            state.credit.actors.push(rep.cast[i]);
+                        }
+                        state.credit.realisator = rep.crew.find( e => e.known_for_department == "Directing");
+                        t.$("spinner").style.display = "none";
+                        t.$("main").style.display = "";
+                        t.update();
+                    });
+
+                });
+
+            }
+        }
+    </script>
+</film>

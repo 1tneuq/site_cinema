@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Projet Cinema</title>
+    <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
+    <link rel="stylesheet" href="style.css">
+    <script src="js/modele.js"></script>
+    <script src="https://unpkg.com/riot@6/riot+compiler.min.js"></script>
+    <script src="https://unpkg.com/@riotjs/route@8.0.1/route.js"></script>
+    <script src="riot/Note.riot" type="riot"></script>
+    <script src="riot/Affiche.riot" type="riot"></script>
+    <script src="riot/Loader.riot" type="riot"></script>
+    <script src="riot/App.riot" type="riot"></script>
+    <script src="riot/Accueil.riot" type="riot"></script>
+    <script src="riot/Film.riot" type="riot"></script>
+
+</head>
+<body>
+    <app></app>
+    <script>
+        riot.register('router', route.Router)
+        riot.register('route', route.Route)
+        modele.updateGenres();
+
+        riot.compile().then( () => {
+            riot.mount('app', {})
+        },
+        (erreur) =>{
+            console.log("erreur compilation: "+erreur);
+        })
+    </script>
+</body>
+</html>

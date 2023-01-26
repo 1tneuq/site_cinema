@@ -1,0 +1,17 @@
+<app>
+    <router {base}>
+        <route path="">
+            <home></home>
+        </route>
+        <route path="#/film/:film">
+            <film id={ route.params.film }></film>
+        </route>
+    </router>
+    
+    <script>
+        const loc = window.location
+	    export default {
+	      base: `${loc.protocol}//${loc.host}${loc.pathname ? loc.pathname : '' }`
+	    }
+    </script>
+</app>

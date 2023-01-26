@@ -1,0 +1,50 @@
+<affiche>
+    <a href={ "#/film/"+this.props.movie.id }>
+        <h4>{props.movie.title}</h4>
+        <img src={ props.movie.img != undefined ? "https://image.tmdb.org/t/p/w200/"+props.movie.img : ""}/>
+        <note note={ props.movie.vote } ></note>
+        <div if={ !props.hide }>
+            <span each={ genre in props.movie.genres }>{ genre }</span>
+        </div>
+    </a>
+    <style>
+        *{
+          font-family: Montserrat;
+        }
+        a{
+           text-decoration: none;
+           color: initial;
+        }
+        :host{
+            overflow: hidden;
+            width: 200px;
+            margin-bottom: 15px;
+        }
+        :host>a>h4{
+            white-space: nowrap;
+            display: block;
+            margin: 5px 0px;
+        }
+        :host>a>div{
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        :host>a>div>span{
+            background-color: #DAF1E0;
+            color: #2A6F40;
+            padding: 5px 5px;
+            border-radius: 3px;
+        }
+        :host:hover{
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+        export default {
+            genres: modele.genres,
+        }
+    </script>
+</affiche>
